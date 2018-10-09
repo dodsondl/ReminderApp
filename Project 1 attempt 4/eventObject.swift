@@ -8,45 +8,31 @@
 
 import UIKit
 
-class scaleSegue: UIStoryboardSegue {
+class eventObject: NSObject, NSCoding {
+    var eventName: String
+    var eventDate: Date
     
-    override func perform() {
-        scale()
+    init?(eventName: String, eventDate: Date) {
+        if eventName.isEmpty {
+            return nil
+        }
+        
+        self.eventName = eventName
+        self.eventDate = eventDate
     }
-
-    
-    func scale() {
-        let toViewController = self.destination
-        let fromViewController = self.source
-        
-        let containerView = fromViewController.view.superview
-        let originalCenter = fromViewController.view.center
-        
-        toViewController.view.transform = CGAffineTransform(scaleX: 0.05, y: 0.05)
-        toViewController.view.center = originalCenter
-        
-        containerView?.addSubview(toViewController.view)
-        
-        UIView.animate(withDuration: 0.5, delay: 0, options: .curveEaseOut, animations: {toViewController.view.transform = CGAffineTransform.identity}, completion: { success in fromViewController.present(toViewController, animated: false, completion: nil)})
-    }
-}
-
-
-class backScaleSegue: UIStoryboardSegue {
-    
-    override func perform() {
-        scale()
+    var isOverdue: Bool {
+        return (Date().compare(self.eventDate) == ComparisonResult.orderedDescending) // deadline is earlier than current date
     }
     
-    
-    func scale() {
-        let toViewController = self.destination
-        let fromViewController = self.source
+    required convenience init?(coder aDecoder: NSCoder){
+        let eventName = aDecoder.decodeObject(forKey: "eventName") as! String
+        let eventDate = aDecoder.decodeObject(forKey: "eventDate")as! Date
         
-       fromViewController.view.superview?.insertSubview(toViewController.view, at: 0)
-        
-        UIView.animate(withDuration: 0.5, delay: 0, options: .curveEaseInOut, animations: {fromViewController.view.transform = CGAffineTransform(scaleX: 0.05, y: 0.05)}, completion: { success in fromViewController.dismiss(animated: false, completion: nil)})
+        self.init(eventName: eventName, eventDate: eventDate)
     }
     
-    
+    func encode(with aCoder: NSCoder) {
+        aCoder.encode(eventName, forKey: "eventName")
+        aCoder.encode(eventDate, forKey: "eventDate")
+    }
 }
